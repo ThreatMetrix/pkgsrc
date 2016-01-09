@@ -1,4 +1,4 @@
-# $NetBSD: Makefile,v 1.855 2015/12/13 17:25:03 taca Exp $
+# $NetBSD: Makefile,v 1.858 2016/01/01 15:25:43 fhajny Exp $
 #
 
 COMMENT=	Text processing utilities (does not include desktop publishing)
@@ -13,6 +13,7 @@ SUBDIR+=	OdfConverter
 SUBDIR+=	R-formatR
 SUBDIR+=	R-highr
 SUBDIR+=	R-markdown
+SUBDIR+=	R-stringi
 SUBDIR+=	R-stringr
 SUBDIR+=	WordNet
 SUBDIR+=	aiksaurus
@@ -328,6 +329,7 @@ SUBDIR+=	latex2html
 SUBDIR+=	libclucene
 SUBDIR+=	libcroco
 SUBDIR+=	libexttextcat
+SUBDIR+=	libfastjson
 SUBDIR+=	liblinebreak
 SUBDIR+=	liblrdf
 SUBDIR+=	libnxml
@@ -814,6 +816,7 @@ SUBDIR+=	scrollkeeper-dtd
 SUBDIR+=	serd
 SUBDIR+=	sgrep
 SUBDIR+=	shared-desktop-ontologies
+SUBDIR+=	sift
 SUBDIR+=	soprano
 SUBDIR+=	sord
 SUBDIR+=	source-highlight

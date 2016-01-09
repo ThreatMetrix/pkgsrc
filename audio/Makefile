@@ -1,4 +1,4 @@
-# $NetBSD: Makefile,v 1.524 2015/09/11 12:35:35 wiz Exp $
+# $NetBSD: Makefile,v 1.527 2015/12/28 03:30:37 kamil Exp $
 #
 
 COMMENT=	Audio tools
@@ -191,6 +191,7 @@ SUBDIR+=	gst-plugins1-mad
 SUBDIR+=	gst-plugins1-oss
 SUBDIR+=	gst-plugins1-pulse
 SUBDIR+=	gst-plugins1-sid
+SUBDIR+=	gst-plugins1-soundtouch
 SUBDIR+=	gst-plugins1-spc
 SUBDIR+=	gst-plugins1-speex
 SUBDIR+=	gst-plugins1-twolame
@@ -409,6 +410,7 @@ SUBDIR+=	rosegarden
 SUBDIR+=	rplay
 SUBDIR+=	rsynth
 SUBDIR+=	rtunes
+SUBDIR+=	rubberband
 SUBDIR+=	ruby-mp3info
 SUBDIR+=	ruby-taglib
 SUBDIR+=	schismtracker
@@ -456,6 +458,7 @@ SUBDIR+=	trm
 SUBDIR+=	tunapie
 SUBDIR+=	twolame
 SUBDIR+=	ubs
+SUBDIR+=	vamp-plugin-sdk
 SUBDIR+=	vcf
 SUBDIR+=	vorbis-tools
 SUBDIR+=	vorbisgain

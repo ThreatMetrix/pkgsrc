@@ -481,13 +481,13 @@ build the packages for himself, which is a time-costly task.
 
 pkgsrc currently contains several thousand packages, including:
 
-  * www/apache - The Apache web server
+  * www/apache22 - The Apache web server
 
   * www/firefox - The Firefox web browser
 
   * meta-pkgs/gnome - The GNOME Desktop Environment
 
-  * meta-pkgs/kde3 - The K Desktop Environment
+  * meta-pkgs/kde4 - The K Desktop Environment
 
 ...just to name a few.
 
@@ -1055,7 +1055,7 @@ the --unprivileged option, workaround is:
 
 3.3.2. Darwin (Mac OS X)
 
-Darwin 5.x and up are supported.
+Darwin 8.x and up are supported.
 
 Before you start, you need to download and install the Mac OS X Developer Tools
 from Apple's Developer Connection. This requires (free) membership. See http://

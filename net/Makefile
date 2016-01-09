@@ -1,4 +1,4 @@
-# $NetBSD: Makefile,v 1.1093 2015/12/13 00:33:07 kamil Exp $
+# $NetBSD: Makefile,v 1.1095 2016/01/03 00:00:49 ryoon Exp $
 #
 
 COMMENT=	Networking tools
@@ -576,6 +576,7 @@ SUBDIR+=	pxe
 SUBDIR+=	py-GeoIP
 SUBDIR+=	py-IP
 SUBDIR+=	py-ORBit
+SUBDIR+=	py-Socks
 SUBDIR+=	py-adns
 SUBDIR+=	py-amqp
 SUBDIR+=	py-apache-libcloud
@@ -799,6 +800,7 @@ SUBDIR+=	whoson
 SUBDIR+=	wide-dhcpv6
 SUBDIR+=	wimon
 SUBDIR+=	wireshark
+SUBDIR+=	wireshark2
 SUBDIR+=	wistumbler
 SUBDIR+=	wistumbler2
 SUBDIR+=	wistumbler2-gtk

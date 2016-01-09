@@ -1,4 +1,4 @@
-# $NetBSD: Makefile,v 1.1142 2015/12/14 13:54:32 taca Exp $
+# $NetBSD: Makefile,v 1.1144 2016/01/02 10:46:54 wiz Exp $
 #
 
 COMMENT=	Packages related to the World Wide Web
@@ -160,6 +160,7 @@ SUBDIR+=	libmrss
 SUBDIR+=	libproxy
 SUBDIR+=	librest
 SUBDIR+=	librest07
+SUBDIR+=	libsass
 SUBDIR+=	libwww
 SUBDIR+=	liferea
 SUBDIR+=	lighttpd
@@ -629,6 +630,7 @@ SUBDIR+=	py-google-api-python-client-py3
 SUBDIR+=	py-graphite-web
 SUBDIR+=	py-gunicorn
 SUBDIR+=	py-http-parser
+SUBDIR+=	py-httpbin
 SUBDIR+=	py-httpie
 SUBDIR+=	py-httplib2
 SUBDIR+=	py-idna
@@ -653,6 +655,7 @@ SUBDIR+=	py-simpletal
 SUBDIR+=	py-sparqlwrapper
 SUBDIR+=	py-static
 SUBDIR+=	py-swish-e
+SUBDIR+=	py-test-httpbin
 SUBDIR+=	py-tornado
 SUBDIR+=	py-twill
 SUBDIR+=	py-uliweb
@@ -759,6 +762,7 @@ SUBDIR+=	ruby-url_mount
 SUBDIR+=	ruby-webrobots
 SUBDIR+=	ruby-websocket
 SUBDIR+=	ruby-webunit
+SUBDIR+=	sassc
 SUBDIR+=	screws
 SUBDIR+=	seamonkey
 SUBDIR+=	seamonkey-l10n
