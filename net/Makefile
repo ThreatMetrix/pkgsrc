@@ -1,4 +1,4 @@
-# $NetBSD: Makefile,v 1.1095 2016/01/03 00:00:49 ryoon Exp $
+# $NetBSD: Makefile,v 1.1098 2016/01/11 04:26:48 ryoon Exp $
 #
 
 COMMENT=	Networking tools
@@ -593,6 +593,7 @@ SUBDIR+=	py-eventlib
 SUBDIR+=	py-foolscap
 SUBDIR+=	py-gevent
 SUBDIR+=	py-google
+SUBDIR+=	py-google-cloud-sdk
 SUBDIR+=	py-hatop
 SUBDIR+=	py-hpack
 SUBDIR+=	py-ipaddress
@@ -668,6 +669,7 @@ SUBDIR+=	ruby-net-ldap
 SUBDIR+=	ruby-net-ping
 SUBDIR+=	ruby-netaddr
 SUBDIR+=	ruby-netrc
+SUBDIR+=	ruby-pluggaloid
 SUBDIR+=	ruby-rubytter
 SUBDIR+=	ruby-snmp
 SUBDIR+=	ruby-soap4r
@@ -675,6 +677,7 @@ SUBDIR+=	ruby-stompserver
 SUBDIR+=	ruby-tw
 SUBDIR+=	ruby-twitter
 SUBDIR+=	ruby-twitter-stream
+SUBDIR+=	ruby-twitter-text
 SUBDIR+=	ruby-userstream
 SUBDIR+=	samba
 SUBDIR+=	samba4
