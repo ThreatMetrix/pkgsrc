@@ -1,4 +1,4 @@
-# $NetBSD: Makefile,v 1.858 2016/01/01 15:25:43 fhajny Exp $
+# $NetBSD: Makefile,v 1.864 2016/01/17 13:45:57 wiz Exp $
 #
 
 COMMENT=	Text processing utilities (does not include desktop publishing)
@@ -16,6 +16,7 @@ SUBDIR+=	R-markdown
 SUBDIR+=	R-stringi
 SUBDIR+=	R-stringr
 SUBDIR+=	WordNet
+SUBDIR+=	aha
 SUBDIR+=	aiksaurus
 SUBDIR+=	antiword
 SUBDIR+=	artha
@@ -667,6 +668,7 @@ SUBDIR+=	py-Whoosh
 SUBDIR+=	py-X
 SUBDIR+=	py-X2
 SUBDIR+=	py-acora
+SUBDIR+=	py-alabaster
 SUBDIR+=	py-anyjson
 SUBDIR+=	py-biplist
 SUBDIR+=	py-cElementTree
@@ -714,7 +716,9 @@ SUBDIR+=	py-pyphen
 SUBDIR+=	py-pyquery
 SUBDIR+=	py-rdflib
 SUBDIR+=	py-relatorio
+SUBDIR+=	py-snowballstemmer
 SUBDIR+=	py-sphinx
+SUBDIR+=	py-sphinx-rtd-theme
 SUBDIR+=	py-sphinx-theme-cloud
 SUBDIR+=	py-textile
 SUBDIR+=	py-tinycss
@@ -837,6 +841,8 @@ SUBDIR+=	tcl-xml
 SUBDIR+=	tei
 SUBDIR+=	tei-p5-schema
 SUBDIR+=	tei-xsl
+SUBDIR+=	tex-latexdiff
+SUBDIR+=	tex-latexdiff-doc
 SUBDIR+=	tex-makeindex
 SUBDIR+=	tex-makeindex-doc
 SUBDIR+=	tex-xmltex

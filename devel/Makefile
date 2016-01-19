@@ -1,4 +1,4 @@
-# $NetBSD: Makefile,v 1.2199 2016/01/10 19:58:44 markd Exp $
+# $NetBSD: Makefile,v 1.2204 2016/01/17 14:08:03 wiz Exp $
 #
 
 COMMENT=	Development utilities
@@ -281,6 +281,7 @@ SUBDIR+=	gnustep-examples
 SUBDIR+=	gnustep-make
 SUBDIR+=	gnustep-objc
 SUBDIR+=	gnustep-objc-lf2
+SUBDIR+=	go-check
 SUBDIR+=	go-flags-svent
 SUBDIR+=	go-nbreader
 SUBDIR+=	go-tools
@@ -1506,6 +1507,7 @@ SUBDIR+=	p5-Variable-Magic
 SUBDIR+=	p5-Want
 SUBDIR+=	p5-WeakRef
 SUBDIR+=	p5-Wx-Perl-DataWalker
+SUBDIR+=	p5-XML-Compile-Tester
 SUBDIR+=	p5-XSLoader
 SUBDIR+=	p5-accessors
 SUBDIR+=	p5-accessors-fast
@@ -2109,6 +2111,7 @@ SUBDIR+=	vanessa_adt
 SUBDIR+=	vanessa_logger
 SUBDIR+=	vanessa_socket
 SUBDIR+=	vera++
+SUBDIR+=	visualvm
 SUBDIR+=	vtcl
 SUBDIR+=	waf
 SUBDIR+=	wide
