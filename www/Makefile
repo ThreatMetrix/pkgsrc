@@ -1,4 +1,4 @@
-# $NetBSD: Makefile,v 1.1147 2016/01/10 20:32:44 bsiegert Exp $
+# $NetBSD: Makefile,v 1.1150 2016/01/24 17:09:06 leot Exp $
 #
 
 COMMENT=	Packages related to the World Wide Web
@@ -494,9 +494,7 @@ SUBDIR+=	p5-Test-HTTP-Server-Simple
 SUBDIR+=	p5-Test-WWW-Declare
 SUBDIR+=	p5-Test-WWW-Mechanize
 SUBDIR+=	p5-Test-WWW-Mechanize-Catalyst
-SUBDIR+=	p5-Test-WWW-Mechanize-FormFiller
 SUBDIR+=	p5-Test-WWW-Mechanize-PSGI
-SUBDIR+=	p5-Test-WWW-Mechanize-Shell
 SUBDIR+=	p5-Twiggy
 SUBDIR+=	p5-URI
 SUBDIR+=	p5-URI-Escape-XS
@@ -512,7 +510,9 @@ SUBDIR+=	p5-WWW-Curl
 SUBDIR+=	p5-WWW-Facebook-API
 SUBDIR+=	p5-WWW-Mechanize
 SUBDIR+=	p5-WWW-Mechanize-Cached
+SUBDIR+=	p5-WWW-Mechanize-FormFiller
 SUBDIR+=	p5-WWW-Mechanize-GZip
+SUBDIR+=	p5-WWW-Mechanize-Shell
 SUBDIR+=	p5-WWW-Mechanize-Timed
 SUBDIR+=	p5-WWW-Pastebin-PastebinCom-Create
 SUBDIR+=	p5-WWW-Pastebin-RafbNet-Create
@@ -638,6 +638,7 @@ SUBDIR+=	py-httpie
 SUBDIR+=	py-httplib2
 SUBDIR+=	py-idna
 SUBDIR+=	py-jonpy
+SUBDIR+=	py-livereload
 SUBDIR+=	py-mechanize
 SUBDIR+=	py-mezzanine
 SUBDIR+=	py-mod_wsgi
@@ -806,6 +807,7 @@ SUBDIR+=	urlget
 SUBDIR+=	urlgrabber
 SUBDIR+=	varnish
 SUBDIR+=	viewvc
+SUBDIR+=	vimb
 SUBDIR+=	visitors
 SUBDIR+=	w3
 SUBDIR+=	w3c-httpd
