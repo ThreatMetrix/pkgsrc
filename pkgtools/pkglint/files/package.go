@@ -82,8 +82,14 @@ func (pkg *Package) checkPossibleDowngrade() {
 	}
 
 	if change.Action == "Updated" {
-		if pkgverCmp(pkgversion, change.Version) < 0 {
-			mkline.Warn2("The package is being downgraded from %s to %s", change.Version, pkgversion)
+		changeVersion := regcomp(`nb\d+$`).ReplaceAllString(change.Version, "")
+		if pkgverCmp(pkgversion, changeVersion) < 0 {
+			mkline.Line.Warnf("The package is being downgraded from %s (see %s) to %s", change.Version, change.Line.ReferenceFrom(mkline.Line), pkgversion)
+			Explain4(
+				"The files in doc/CHANGES-*, in which all version changes are",
+				"recorded, have a higher version number than what the package says.",
+				"This is unusual, since packages are typically upgraded instead of",
+				"downgraded.")
 		}
 	}
 }
@@ -288,7 +294,7 @@ func readMakefile(fname string, mainLines *MkLines, allLines *MkLines, including
 				G.Pkg.seenMakefileCommon = true
 			}
 
-			if !contains(incDir, "/mk/") || strings.HasSuffix(includeFile, "/mk/haskell.mk") {
+			if !contains(incDir, "/mk/") || strings.HasSuffix(includeFile, "/mk/haskell.mk") || contains(incDir, "/wip/mk/") {
 				dirname, _ := path.Split(fname)
 				dirname = cleanpath(dirname)
 
@@ -356,26 +362,23 @@ func (pkg *Package) checkfilePackageMakefile(fname string, mklines *MkLines) {
 		}
 	}
 
-	if vardef["REPLACE_PERL"] != nil && vardef["NO_CONFIGURE"] != nil {
-		vardef["REPLACE_PERL"].Warn0("REPLACE_PERL is ignored when ...")
-		vardef["NO_CONFIGURE"].Warn0("... NO_CONFIGURE is set.")
+	if perlLine, noconfLine := vardef["REPLACE_PERL"], vardef["NO_CONFIGURE"]; perlLine != nil && noconfLine != nil {
+		perlLine.Warn1("REPLACE_PERL is ignored when NO_CONFIGURE is set (in %s)", noconfLine.Line.ReferenceFrom(perlLine.Line))
 	}
 
 	if vardef["LICENSE"] == nil {
 		Errorf(fname, noLines, "Each package must define its LICENSE.")
 	}
 
-	if vardef["GNU_CONFIGURE"] != nil && vardef["USE_LANGUAGES"] != nil {
-		languagesLine := vardef["USE_LANGUAGES"]
-
-		if matches(languagesLine.Comment(), `(?-i)\b(?:c|empty|none)\b`) {
+	if gnuLine, useLine := vardef["GNU_CONFIGURE"], vardef["USE_LANGUAGES"]; gnuLine != nil && useLine != nil {
+		if matches(useLine.Comment(), `(?-i)\b(?:c|empty|none)\b`) {
 			// Don't emit a warning, since the comment
 			// probably contains a statement that C is
 			// really not needed.
 
-		} else if !matches(languagesLine.Value(), `(?:^|\s+)(?:c|c99|objc)(?:\s+|$)`) {
-			vardef["GNU_CONFIGURE"].Warn0("GNU_CONFIGURE almost always needs a C compiler, ...")
-			languagesLine.Warn0("... but \"c\" is not added to USE_LANGUAGES.")
+		} else if !matches(useLine.Value(), `(?:^|\s+)(?:c|c99|objc)(?:\s+|$)`) {
+			gnuLine.Warn1("GNU_CONFIGURE almost always needs a C compiler, but \"c\" is not added to USE_LANGUAGES in %s.",
+				useLine.Line.ReferenceFrom(gnuLine.Line))
 		}
 	}
 
@@ -680,7 +683,10 @@ func (pkg *Package) ChecklinesPackageMakefileVarorder(mklines *MkLines) {
 		default:
 			for varindex < len(vars) {
 				if vars[varindex].count == once && !maySkipSection {
-					line.Warn1("%s should be set here.", vars[varindex].varname)
+					line.Warn1("The canonical position for the required variable %s is here.", vars[varindex].varname)
+					Explain(
+						"See doc/Makefile-example or the pkgsrc guide, section",
+						"\"Package components\", subsection \"Makefile\" for more information.")
 				}
 				below[vars[varindex].varname] = belowWhat
 				varindex++

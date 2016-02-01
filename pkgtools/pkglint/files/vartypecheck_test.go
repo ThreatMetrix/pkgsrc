@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	check "gopkg.in/check.v1"
 )
 
@@ -167,6 +169,16 @@ func (s *Suite) TestVartypeCheck_EmulPlatform(c *check.C) {
 		"WARN: fname:2: Unknown operating system: nextbsd\n"+
 		"WARN: fname:2: Unknown hardware architecture: 8087\n"+
 		"WARN: fname:3: \"${LINUX}\" is not a valid emulation platform.\n")
+}
+
+func (s *Suite) TestVartypeCheck_Enum(c *check.C) {
+	runVartypeMatchChecks("JDK", enum("jdk1 jdk2 jdk4").checker,
+		"*",
+		"jdk*",
+		"sun-jdk*",
+		"${JDKNAME}")
+
+	c.Check(s.Output(), equals, "WARN: fname:3: The pattern \"sun-jdk*\" cannot match any of { jdk1 jdk2 jdk4 } for JDK.\n")
 }
 
 func (s *Suite) TestVartypeCheck_FetchURL(c *check.C) {
@@ -344,6 +356,16 @@ func (s *Suite) TestVartypeCheck_URL(c *check.C) {
 	c.Check(s.Output(), equals, "WARN: fname:3: \"http://example.org/download?fname=<distfile>;version=<version>\" is not a valid URL.\n")
 }
 
+func (s *Suite) TestVartypeCheck_Varname(c *check.C) {
+	runVartypeChecks("BUILD_DEFS", opAssign, (*VartypeCheck).Varname,
+		"VARBASE",
+		"VarBase",
+		"PKG_OPTIONS_VAR.pkgbase",
+		"${INDIRECT}")
+
+	c.Check(s.Output(), equals, "WARN: fname:2: \"VarBase\" is not a valid variable name.\n")
+}
+
 func (s *Suite) TestVartypeCheck_Yes(c *check.C) {
 	runVartypeChecks("APACHE_MODULE", opAssign, (*VartypeCheck).Yes,
 		"yes",
@@ -353,13 +375,59 @@ func (s *Suite) TestVartypeCheck_Yes(c *check.C) {
 	c.Check(s.Output(), equals, ""+
 		"WARN: fname:2: APACHE_MODULE should be set to YES or yes.\n"+
 		"WARN: fname:3: APACHE_MODULE should be set to YES or yes.\n")
+
+	runVartypeMatchChecks("PKG_DEVELOPER", (*VartypeCheck).Yes,
+		"yes",
+		"no",
+		"${YESVAR}")
+
+	c.Check(s.Output(), equals, ""+
+		"WARN: fname:1: PKG_DEVELOPER should only be used in a \".if defined(...)\" conditional.\n"+
+		"WARN: fname:2: PKG_DEVELOPER should only be used in a \".if defined(...)\" conditional.\n"+
+		"WARN: fname:3: PKG_DEVELOPER should only be used in a \".if defined(...)\" conditional.\n")
+}
+
+func (s *Suite) TestVartypeCheck_YesNo(c *check.C) {
+	runVartypeChecks("GNU_CONFIGURE", opAssign, (*VartypeCheck).YesNo,
+		"yes",
+		"no",
+		"ja",
+		"${YESVAR}")
+
+	c.Check(s.Output(), equals, ""+
+		"WARN: fname:3: GNU_CONFIGURE should be set to YES, yes, NO, or no.\n"+
+		"WARN: fname:4: GNU_CONFIGURE should be set to YES, yes, NO, or no.\n")
+}
+
+func (s *Suite) TestVartypeCheck_YesNoIndirectly(c *check.C) {
+	runVartypeChecks("GNU_CONFIGURE", opAssign, (*VartypeCheck).YesNoIndirectly,
+		"yes",
+		"no",
+		"ja",
+		"${YESVAR}")
+
+	c.Check(s.Output(), equals, ""+
+		"WARN: fname:3: GNU_CONFIGURE should be set to YES, yes, NO, or no.\n")
 }
 
 func runVartypeChecks(varname string, op MkOperator, checker func(*VartypeCheck), values ...string) {
+	if !contains(op.String(), "=") {
+		panic("runVartypeChecks needs an assignment operator")
+	}
 	for i, value := range values {
 		mkline := NewMkLine(NewLine("fname", i+1, varname+op.String()+value, nil))
 		valueNovar := mkline.withoutMakeVariables(mkline.Value(), true)
 		vc := &VartypeCheck{mkline, mkline.Line, mkline.Varname(), mkline.Op(), mkline.Value(), valueNovar, "", true, false}
+		checker(vc)
+	}
+}
+
+func runVartypeMatchChecks(varname string, checker func(*VartypeCheck), values ...string) {
+	for i, value := range values {
+		text := fmt.Sprintf(".if ${%s:M%s} == \"\"", varname, value)
+		mkline := NewMkLine(NewLine("fname", i+1, text, nil))
+		valueNovar := mkline.withoutMakeVariables(value, true)
+		vc := &VartypeCheck{mkline, mkline.Line, varname, opUseMatch, value, valueNovar, "", true, false}
 		checker(vc)
 	}
 }

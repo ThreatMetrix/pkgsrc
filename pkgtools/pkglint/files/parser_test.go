@@ -130,7 +130,88 @@ func (s *Suite) TestParser_MkTokens(c *check.C) {
 	token("${empty(CFLAGS):?:-cflags ${CFLAGS:Q}}", varuse("empty(CFLAGS)", "?:-cflags ${CFLAGS:Q}"))
 	token("${${${PKG_INFO} -E ${d} || echo:L:sh}:L:C/[^[0-9]]*/ /g:[1..3]:ts.}",
 		varuse("${${PKG_INFO} -E ${d} || echo:L:sh}", "L", "C/[^[0-9]]*/ /g", "[1..3]", "ts."))
+	token("${VAR:S/-//S/.//}", varuse("VAR", "S/-//", "S/.//")) // For :S and :C, the colon can be left out.
+	token("${VAR:ts}", varuse("VAR", "ts"))                     // The separator character can be left out.
+	token("${VAR:ts\\000012}", varuse("VAR", "ts\\000012"))     // The separator character can be a long octal number.
+	token("${VAR:ts\\124}", varuse("VAR", "ts\\124"))           // Or even decimal.
 
-	parse("${VAR)", nil, "${VAR)")
-	parse("$(VAR}", nil, "$(VAR}")
+	parse("${VAR)", nil, "${VAR)") // Opening brace, closing parenthesis
+	parse("$(VAR}", nil, "$(VAR}") // Opening parenthesis, closing brace
+}
+
+func (s *Suite) TestParser_MkCond_Basics(c *check.C) {
+	condrest := func(input string, expectedTree *Tree, expectedRest string) {
+		p := NewParser(input)
+		actualTree := p.MkCond()
+		c.Check(actualTree, deepEquals, expectedTree)
+		c.Check(p.Rest(), equals, expectedRest)
+	}
+	cond := func(input string, expectedTree *Tree) {
+		condrest(input, expectedTree, "")
+	}
+	literal := func(literal string) MkToken {
+		return MkToken{literal: literal}
+	}
+	varuse := func(varname string, modifiers ...string) MkVarUse {
+		return MkVarUse{varname: varname, modifiers: modifiers}
+	}
+	_, _ = literal, varuse
+
+	cond("${OPSYS:MNetBSD}",
+		NewTree("not", NewTree("empty", varuse("OPSYS", "MNetBSD"))))
+	cond("defined(VARNAME)",
+		NewTree("defined", "VARNAME"))
+	cond("empty(VARNAME)",
+		NewTree("empty", varuse("VARNAME")))
+	cond("!empty(VARNAME)",
+		NewTree("not", NewTree("empty", varuse("VARNAME"))))
+	cond("!empty(VARNAME:M[yY][eE][sS])",
+		NewTree("not", NewTree("empty", varuse("VARNAME", "M[yY][eE][sS]"))))
+	cond("${VARNAME} != \"Value\"",
+		NewTree("compareVarStr", varuse("VARNAME"), "!=", "Value"))
+	cond("${VARNAME:Mi386} != \"Value\"",
+		NewTree("compareVarStr", varuse("VARNAME", "Mi386"), "!=", "Value"))
+	cond("${VARNAME} != Value",
+		NewTree("compareVarStr", varuse("VARNAME"), "!=", "Value"))
+	cond("\"${VARNAME}\" != Value",
+		NewTree("compareVarStr", varuse("VARNAME"), "!=", "Value"))
+	cond("(defined(VARNAME))",
+		NewTree("defined", "VARNAME"))
+	cond("exists(/etc/hosts)",
+		NewTree("exists", "/etc/hosts"))
+	cond("exists(${PREFIX}/var)",
+		NewTree("exists", "${PREFIX}/var"))
+	cond("${OPSYS} == \"NetBSD\" || ${OPSYS} == \"OpenBSD\"",
+		NewTree("or",
+			NewTree("compareVarStr", varuse("OPSYS"), "==", "NetBSD"),
+			NewTree("compareVarStr", varuse("OPSYS"), "==", "OpenBSD")))
+	cond("${OPSYS} == \"NetBSD\" && ${MACHINE_ARCH} == \"i386\"",
+		NewTree("and",
+			NewTree("compareVarStr", varuse("OPSYS"), "==", "NetBSD"),
+			NewTree("compareVarStr", varuse("MACHINE_ARCH"), "==", "i386")))
+	cond("defined(A) && defined(B) || defined(C) && defined(D)",
+		NewTree("or",
+			NewTree("and",
+				NewTree("defined", "A"),
+				NewTree("defined", "B")),
+			NewTree("and",
+				NewTree("defined", "C"),
+				NewTree("defined", "D"))))
+
+	// Exotic cases
+	cond("0",
+		NewTree("literalNum", "0"))
+	cond("! ( defined(A)  && empty(VARNAME) )",
+		NewTree("not", NewTree("and", NewTree("defined", "A"), NewTree("empty", varuse("VARNAME")))))
+	cond("${REQD_MAJOR} > ${MAJOR}",
+		NewTree("compareVarVar", varuse("REQD_MAJOR"), ">", varuse("MAJOR")))
+	cond("${OS_VERSION} >= 6.5",
+		NewTree("compareVarNum", varuse("OS_VERSION"), ">=", "6.5"))
+	cond("${OS_VERSION} == 5.3",
+		NewTree("compareVarNum", varuse("OS_VERSION"), "==", "5.3"))
+
+	// Errors
+	condrest("!empty(PKG_OPTIONS:Msndfile) || defined(PKG_OPTIONS:Msamplerate)",
+		NewTree("not", NewTree("empty", varuse("PKG_OPTIONS", "Msndfile"))),
+		" || defined(PKG_OPTIONS:Msamplerate)")
 }
