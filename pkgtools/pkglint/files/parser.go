@@ -189,12 +189,26 @@ func (p *Parser) VarUseModifiers(closing string) []string {
 	repl := p.repl
 
 	var modifiers []string
-	for repl.AdvanceStr(":") {
+	mayOmitColon := false
+	for repl.AdvanceStr(":") || mayOmitColon {
+		mayOmitColon = false
 		modifierMark := repl.Mark()
 
 		switch repl.PeekByte() {
 		case 'E', 'H', 'L', 'O', 'Q', 'R', 'T', 's', 't', 'u':
-			if repl.AdvanceRegexp(`^(E|H|L|Ox?|Q|R|T|sh|tA|tW|tl|ts.|tu|tw|u)`) {
+			if repl.AdvanceRegexp(`^(E|H|L|Ox?|Q|R|T|sh|tA|tW|tl|tu|tw|u)`) {
+				modifiers = append(modifiers, repl.Since(modifierMark))
+				continue
+			}
+			if repl.AdvanceStr("ts") {
+				rest := repl.rest
+				if len(rest) >= 2 && (rest[1] == closing[0] || rest[1] == ':') {
+					repl.Skip(1)
+				} else if len(rest) >= 1 && (rest[0] == closing[0] || rest[0] == ':') {
+				} else if repl.AdvanceRegexp(`^\\\d+`) {
+				} else {
+					break
+				}
 				modifiers = append(modifiers, repl.Since(modifierMark))
 				continue
 			}
@@ -221,6 +235,7 @@ func (p *Parser) VarUseModifiers(closing string) []string {
 					if repl.AdvanceStr(separator) {
 						repl.AdvanceRegexp(`^[1gW]`)
 						modifiers = append(modifiers, repl.Since(modifierMark))
+						mayOmitColon = true
 						continue
 					}
 				}
@@ -264,4 +279,137 @@ func (p *Parser) VarUseModifiers(closing string) []string {
 		}
 	}
 	return modifiers
+}
+
+func (p *Parser) MkCond() *Tree {
+	return p.mkCondOr()
+}
+
+func (p *Parser) mkCondOr() *Tree {
+	and := p.mkCondAnd()
+	if and == nil {
+		return nil
+	}
+
+	ands := append([]interface{}(nil), and)
+	for {
+		mark := p.repl.Mark()
+		if !p.repl.AdvanceRegexp(`^\s*\|\|\s*`) {
+			break
+		}
+		next := p.mkCondAnd()
+		if next == nil {
+			p.repl.Reset(mark)
+			break
+		}
+		ands = append(ands, next)
+	}
+	if len(ands) == 1 {
+		return and
+	}
+	return NewTree("or", ands...)
+}
+
+func (p *Parser) mkCondAnd() *Tree {
+	atom := p.mkCondAtom()
+	if atom == nil {
+		return nil
+	}
+
+	atoms := append([]interface{}(nil), atom)
+	for {
+		mark := p.repl.Mark()
+		if !p.repl.AdvanceRegexp(`^\s*&&\s*`) {
+			break
+		}
+		next := p.mkCondAtom()
+		if next == nil {
+			p.repl.Reset(mark)
+			break
+		}
+		atoms = append(atoms, next)
+	}
+	if len(atoms) == 1 {
+		return atom
+	}
+	return NewTree("and", atoms...)
+}
+
+func (p *Parser) mkCondAtom() *Tree {
+	if G.opts.DebugTrace {
+		defer tracecall1(p.Rest())()
+	}
+
+	repl := p.repl
+	mark := repl.Mark()
+	repl.SkipSpace()
+	switch {
+	case repl.AdvanceStr("!"):
+		cond := p.mkCondAtom()
+		if cond != nil {
+			return NewTree("not", cond)
+		}
+	case repl.AdvanceStr("("):
+		cond := p.MkCond()
+		if cond != nil {
+			repl.SkipSpace()
+			if repl.AdvanceStr(")") {
+				return cond
+			}
+		}
+	case repl.AdvanceRegexp(`^defined\s*\(`):
+		if varname := p.Varname(); varname != "" {
+			if repl.AdvanceStr(")") {
+				return NewTree("defined", varname)
+			}
+		}
+	case repl.AdvanceRegexp(`^empty\s*\(`):
+		if varname := p.Varname(); varname != "" {
+			modifiers := p.VarUseModifiers(")")
+			if repl.AdvanceStr(")") {
+				return NewTree("empty", MkVarUse{varname, modifiers})
+			}
+		}
+	case repl.AdvanceRegexp(`^(commands|exists|make|target)\s*\(`):
+		funcname := repl.m[1]
+		argMark := repl.Mark()
+		for p.VarUse() != nil || repl.AdvanceRegexp(`^[^$)]+`) {
+		}
+		arg := repl.Since(argMark)
+		if repl.AdvanceStr(")") {
+			return NewTree(funcname, arg)
+		}
+	default:
+		lhs := p.VarUse()
+		mark := repl.Mark()
+		if lhs == nil && repl.AdvanceStr("\"") {
+			if quotedLhs := p.VarUse(); quotedLhs != nil && repl.AdvanceStr("\"") {
+				lhs = quotedLhs
+			} else {
+				repl.Reset(mark)
+			}
+		}
+		if lhs != nil {
+			if repl.AdvanceRegexp(`^\s*(<|<=|==|!=|>=|>)\s*(\d+(?:\.\d+)?)`) {
+				return NewTree("compareVarNum", *lhs, repl.m[1], repl.m[2])
+			}
+			if repl.AdvanceRegexp(`^\s*(<|<=|==|!=|>=|>)\s*`) {
+				op := repl.m[1]
+				if (op == "!=" || op == "==") && repl.AdvanceRegexp(`^"([^"\$\\]*)"`) {
+					return NewTree("compareVarStr", *lhs, op, repl.m[1])
+				} else if repl.AdvanceRegexp(`^\w+`) {
+					return NewTree("compareVarStr", *lhs, op, repl.m[0])
+				} else if rhs := p.VarUse(); rhs != nil {
+					return NewTree("compareVarVar", *lhs, op, *rhs)
+				}
+			} else {
+				return NewTree("not", NewTree("empty", *lhs)) // See devel/bmake/files/cond.c:/\* For \.if \$/
+			}
+		}
+		if repl.AdvanceRegexp(`^\d+(?:\.\d+)?`) {
+			return NewTree("literalNum", repl.m[0])
+		}
+	}
+	repl.Reset(mark)
+	return nil
 }
